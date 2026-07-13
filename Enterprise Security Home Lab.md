@@ -25,7 +25,7 @@ Ref 1: Network Diagram
 <img width="800" height="500" alt="Screenshot 2026-07-12 170302" src="https://github.com/user-attachments/assets/9fc4333d-1cd6-4c16-a044-cf6a53ca4abb" />
 
  
-This diagram shows the segmented network architecture of my cybersecurity home lab. The environment uses pfSense as the central router and firewall to separate the internal network from vulnerable systems. Wazuh provides centralized security monitoring and endpoint telemetry, while Kali Linux is used to simulate 
+This diagram shows the segmented network architecture of my lab. The environment uses pfSense as the central router and firewall to separate the internal network from vulnerable systems. Wazuh provides centralized security monitoring and endpoint telemetry, while Kali Linux is used to simulate 
 attacks against Windows and Metasploitable systems for threat detection, vulnerability assessment, and security testing.
 
 ---------------------------
