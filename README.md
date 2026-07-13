@@ -1,4 +1,4 @@
-# Hello, I'm Armen 
+# Hello, I'm Armen Darakchyan
 <a href="https://www.linkedin.com/in/armen-darakchyan-75ba87302"><img src="https://img.shields.io/badge/-LinkedIn-0072b1?&style=for-the-badge&logo=linkedin&logoColor=white" /></a>
 
 I am a cybersecurity student passionate about defensive security, threat detection, and security engineering. I enjoy building hands-on labs that simulate real-world attacks, writing detections, and learning how defenders identify and respond to adversary activity. This GitHub serves as a portfolio of the projects, labs, and documentation I've created throughout my cybersecurity journey.
