@@ -1,105 +1,73 @@
-# Enterprise Security Home Lab - VMWare
+# Sigma Rules Detection Lab
 
 ## Objective
-### This project showcases an enterprise-style cybersecurity home lab built in VMware to simulate real-world security operations. The environment integrates pfSense for network security, Wazuh with Sysmon for endpoint monitoring and threat detection, Snort for intrusion detection, and OpenVAS/Nessus for vulnerability assessments. Attack simulations using Kali Linux and Atomic Red Team were executed to emulate adversary techniques, validate custom detections, and analyze security events in Wazuh, providing hands-on experience with detection engineering, threat hunting, and incident response.
+### This lab was completed on TryHackMe which simulated an incident where there was unusual activity across several machines on a network. Two suspicious behaviors were flagged: an unknown entity creating scheduled tasks on a host and ransomware activity on the same environment. My task was to act as the analyst, building Sigma detection rules for both activities, translating them into ElasticSearch/Lucene queries using Uncoder.IO, and running those queries in Kibana to confirm the malicious activity and pull out key forensic details (task name, run time, dropped file name, event code, and ransom note contents).
 
 ### Skills Learned
-- Design and deploy home lab to simulate real-world network and security operations.
-- Implement centralized security monitoring by integrating Wazuh, Sysmon, and Snort for endpoint and network visibility.
-- Emulate adversary techniques using Atomic Red Team and Kali Linux to validate detections and strengthen security monitoring.
-- Perform vulnerability assessments with OpenVAS and Nessus to identify and remediate security weaknesses.
-- Develop hands-on skills in threat detection, log analysis, network segmentation, and firewall management.
+- Writing Sigma rules from scratch for both process creation and file creation log sources.
+- Translating Sigma rules into platform-specific queries (ElasticSearch/Lucene) using Uncoder.IO.
+- Querying and pivoting through logs in Kibana to validate detection logic against real telemetry.
+- Interpreting Sysmon event data (Event ID 1 - Process Creation, Event ID 11 - File Creation) to reconstruct attacker behavior.
+- Tracing a command execution chain from a scheduled task through to a dropped ransom note file.
 
 ### Tools Used
-- Virtualization: VMware
-- Network Security: pfSense, Snort, Wireshark
-- SIEM/XDR: Wazuh, Sysmon
-- Adversary Emulation: Atomic Red Team, Kali Linux
-- Vulnerability Management: Nessus, OpenVAS
-- Threat Intelligence & Patching: VirusTotal, Action1
+- Elastic/Kibana: for searching, filtering, and inspecting ingested Sysmon logs.
+- Sigma: for writing vendor-agnostic detection rules.
+- Uncoder.IO: for converting Sigma rules into ElasticSearch/Lucene queries.
+- Sysmon: as the log source providing process creation and file creation telemetry.
+
 
 ## Steps
 
-Ref 1: Network Diagram
+1: Building the Ransomware Detection Sigma Rule
 
-<img width="800" height="500" alt="Screenshot 2026-07-12 170302" src="https://github.com/user-attachments/assets/9fc4333d-1cd6-4c16-a044-cf6a53ca4abb" />
+
+<img width="796" height="338" alt="Sigma rule for ransomware detection" src="https://github.com/user-attachments/assets/96e45f22-a6ad-4ead-9452-38acdaaaa583" />
 
  
-This diagram shows the segmented network architecture of my lab. The environment uses pfSense as the central router and firewall to separate the internal network from vulnerable systems. Wazuh provides centralized security monitoring and endpoint telemetry, while Kali Linux is used to simulate 
-attacks against Windows and Metasploitable systems for threat detection, vulnerability assessment, and security testing.
+- Using the details from the process creation event, I wrote a Sigma rule targeting the file_creation log source. The rule looks for any file creation performed by cmd.exe where the resulting filename ends in .txt
 
 ---------------------------
-Ref 2: Network Intrusion Detection with Snort
+2: Investigating the Ransomware Activity
 
-<img width="689" height="305" alt="Screenshot 2026-07-12 162228" src="https://github.com/user-attachments/assets/6151049c-4bbe-4d83-87cc-5c973cd30e32" />
+Ref: Uncoder.IO translating the Sigma rule from Sigma format into an ElastAlert
+<img width="2014" height="472" alt="Uncoder rule to query conversion" src="https://github.com/user-attachments/assets/35dc8bdb-f80c-443e-8935-fc8fa1b92758" />
 
-<img width="664" height="482" alt="Screenshot 2026-07-12 162601" src="https://github.com/user-attachments/assets/99383a09-f5a8-4206-87e3-391942fbf480" />
+Ref: Kibana results for the translated query, showing the File Created event (Event ID 11)
+<img width="2267" height="701" alt="File creation " src="https://github.com/user-attachments/assets/7385ba1a-45a9-4f3d-a09c-95430ac7bfb5" />
 
-Snort IDS/IPS was deployed on pfSense to monitor network traffic.
+- I used Uncoder.IO to translate the Sigma rule into an ElasticAlert/Lucene query, then ran the generated query in Kibana. The query (process.executable.text:"cmd.exe" AND file.path.text:*.txt) returned a single matching event - Sysmon Event ID 11 (File Created) - confirming cmd.exe created YOUR_FILES.txt on the Administrator's desktop at the same timestamp as the process creation event.
 
-Custom detection rules were created to identify:
-
-- ICMP traffic
-- SSH connections
-- Nmap reconnaissance activity
-- HTTP probe activity
-  
-Nmap scans were launched against Metasploitable systems to validate the custom detection rules.
 
 ---------------------------
-Ref 3: Vulnerability Assessment
+3: Building the Scheduled Task Detection Sigma Rule
 
-<img width="625" height="299" alt="Screenshot 2026-07-12 162928" src="https://github.com/user-attachments/assets/730df36a-cfb5-46dc-8e8f-eb663fd13a6c" />
+<img width="1019" height="404" alt="Sigma rule schtasks" src="https://github.com/user-attachments/assets/ac068e8f-7d2b-4705-a52c-23fb13b35f13" />
 
-<img width="685" height="147" alt="Screenshot 2026-07-12 163056" src="https://github.com/user-attachments/assets/0ada8408-e698-4d08-8ffe-ae033743d06c" />
+- I then wrote a second Sigma rule under the process_creation log source, detecting any execution of schtasks.exe whose command line contains both schtasks and create. I added a filter to exclude events where the user is NT AUTHORITY\SYSTEM, so the rule focuses on non-system accounts creating scheduled tasks 
+---------------------------
+4: Investigating the Scheduled Task Activity
 
-OpenVAS and Nessus were used to conduct vulnerability assessments against systems within the vulnerable network.
+Ref: Translating and Validating the Scheduled Task Rule
+<img width="1878" height="529" alt="Screenshot 2026-07-19 011856" src="https://github.com/user-attachments/assets/9076b744-4759-43a7-bb21-abf2192edac6" />
 
-An OpenVAS scan against Metasploitable 2 identified:
+Ref: Kibana results showing the schtasks.exe process creation event
+<img width="2265" height="800" alt="Schtask exe creation" src="https://github.com/user-attachments/assets/df7ce50a-9ec9-4151-8b6c-b5acdfddcb69" />
 
-- 13 Critical vulnerabilities
-- 11 High severity vulnerabilities
-- 40 Medium severity vulnerabilities
-- 6 Low severity vulnerabilities
-- 20 exposed network ports
+- Next, I pivoted to the scheduled task logs. I searched Kibana using the query from Uncoder.IO - (process.executable.txt:"schtasks".exe AND (process.command_line.txt:"*schtasks*" AND process.command_line:*create*)) AND NOT (User:NT AUTHORITY\SYSTEM) - This surfaced a process creation event showing schtasks.exe being run with /Create /SC ONCE /TN spawn /TR C:\windows\system32\cmd.exe /ST 20:10, spawned as a child of cmd.exe, revealing a scheduled task named spawn set to run at 20:10.
 
-Common exposed services included HTTP, FTP, Telnet, SSH, and SMTP.
-
-Nessus was also used to validate vulnerability findings and identified critical security issues. In the result of a full scan of the 172.30.1.0/24 network nessus shows us outdated operating systems, backdoor detection, and weak VNC authentication.
 
 ---------------------------
-Ref 4: SIEM & Endpoint Monitoring
+5:  Summarizing the Findings
 
-<img width="709" height="268" alt="Screenshot 2026-07-12 164011" src="https://github.com/user-attachments/assets/9e82beed-9c3f-45e2-95db-6956f32e991d" />
 
-Wazuh SIEM/XDR was deployed to provide centralized security monitoring across Windows and Linux endpoints.
+<img width="2247" height="722" alt="Content of text file" src="https://github.com/user-attachments/assets/da8c1a56-7e3b-49d8-844d-213643ee3ab9" />
 
-Sysmon logs were integrated with Wazuh to provide enhanced endpoint telemetry and visibility into:
+Piecing both detections together, the attack chain was:
+- An unknown entity used schtasks.exe to create a scheduled task named spawn, set to trigger cmd.exe at 20:10.
+- The cmd.exe execution was then used to drop a ransom note file, YOUR_FILES.txt, on the Administrator's desktop, containing the text "T1486 - Purelocker Ransom Note."
+- Both events were captured via Sysmon Event ID 1 and Event ID 11 and both were successfully detected using the custom Sigma rules built during this lab.
 
-- Process execution
-- Process injection
-- DLL activity
-- File creation and deletion
-- Network connections
-- Suspicious system activity
-
----------------------------
-Ref 5: Vulnerability Remediation
-
-<img width="623" height="352" alt="Screenshot 2026-07-12 164308" src="https://github.com/user-attachments/assets/4eb7bc43-bd65-4b59-b21e-f8644bc48641" />
-
-<img width="677" height="161" alt="Screenshot 2026-07-12 164317" src="https://github.com/user-attachments/assets/32ca0100-83b2-4497-ac00-aac661ea59d3" />
-
-Action1 was deployed for endpoint and patch management. This was used to identify outdated applications and automate software updates.
-
-Successfully remediated outdated versions of:
-
-- Google Chrome
-- Git
-
-Google Chrome contained a critical vulnerability with a CVSS score of **9.6**.
-
-Both applications were updated to supported versions to mitigate the identified security risks.
 
 
 
