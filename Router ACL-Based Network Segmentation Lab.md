@@ -1,73 +1,58 @@
-# Sigma Rules Detection Lab
+# Router ACL-Based Network Segmentation Lab
 
 ## Objective
-### This lab was completed on TryHackMe which simulated an incident where there was unusual activity across several machines on a network. Two suspicious behaviors were flagged: an unknown entity creating scheduled tasks on a host and ransomware activity on the same environment. My task was to act as the analyst, building Sigma detection rules for both activities, translating them into ElasticSearch/Lucene queries using Uncoder.IO, and running those queries in Kibana to confirm the malicious activity and pull out key forensic details (task name, run time, dropped file name, event code, and ransom note contents).
+### This project focused on implementing traffic segmentation on a Cisco router using extended access control lists (ACLs). The goal was to restrict internal lateral communication between hosts based on protocol and subnet, allowing only specific, sanctioned traffic between endpoints while blocking everything else. The lab also involved verifying rule behavior through test cases and evaluating ACL placement and performance.
 
 ### Skills Learned
-- Writing Sigma rules from scratch for both process creation and file creation log sources.
-- Translating Sigma rules into platform-specific queries (ElasticSearch/Lucene) using Uncoder.IO.
-- Querying and pivoting through logs in Kibana to validate detection logic against real telemetry.
-- Interpreting Sysmon event data (Event ID 1 - Process Creation, Event ID 11 - File Creation) to reconstruct attacker behavior.
-- Tracing a command execution chain from a scheduled task through to a dropped ransom note file.
+- Designing and implementing extended ACLs to control traffic by protocol, source, and destination
+- Applying least-privilege principles to internal network segmentation
+- Testing and validating ACL rules using protocol-specific traffic (HTTP and HTTPS)
+- Understanding ACL placement strategy and its impact on performance
+- Monitoring ACL hit counts to confirm rule effectiveness
 
 ### Tools Used
-- Elastic/Kibana: for searching, filtering, and inspecting ingested Sysmon logs.
-- Sigma: for writing vendor-agnostic detection rules.
-- Uncoder.IO: for converting Sigma rules into ElasticSearch/Lucene queries.
-- Sysmon: as the log source providing process creation and file creation telemetry.
-
+- Cisco IOS for ACL configuration
+- Packet Tracer for topology simulation
+- Browser-based testing for traffic verification
 
 ## Steps
 
-1: Building the Ransomware Detection Sigma Rule
+1: Network Topology
+
+<img width="1192" height="490" alt="Screenshot 2026-07-26 154208" src="https://github.com/user-attachments/assets/2af71be6-fda2-497b-b4d0-eb00a7b6e493" />
+
+Built the topology in Cisco Packet Tracer with Router1 segmenting two internal subnets:
+ - 10.1.1.0/24 - HTTP Server1 (10.1.1.100) and HTTP Server2 (10.1.1.101), behind Switch1 
+ - 10.1.2.0/24 - Inside PC1 (10.1.2.101) and Inside PC2 (10.1.2.102), behind Multilayer Switch0
+
+---
+
+2: Created extended ACL on Router1
+
+<img width="550" height="102" alt="Screenshot 2026-07-26 152529" src="https://github.com/user-attachments/assets/0de8ea01-0721-49ad-8d4b-675d735b44b2" />
+
+- Line 10: Inside PC1 (10.1.2.101) can reach HTTP Server1 (10.1.1.100) on HTTP only
+- Line 20: Inside PC2 (10.1.2.102) can reach HTTP Server2 (10.1.1.101) on HTTPS only
+- Line 30: Explicit deny for all other traffic from 10.1.2.0/24 to 10.1.1.0/24
+- Line 40: All other outbound traffic from 10.1.2.0/24 permitted
+
+---
+
+3: Verified the configuration with test cases
+
+<img width="845" height="530" alt="Screenshot 2026-07-26 153542" src="https://github.com/user-attachments/assets/95c8546a-9ea4-4400-8c6a-0b69b57dce11" />
+
+- Inside PC1 successfully loaded "http://10.1.1.100" in its browser, confirming HTTP access to HTTP Server1
 
 
-<img width="796" height="338" alt="Sigma rule for ransomware detection" src="https://github.com/user-attachments/assets/96e45f22-a6ad-4ead-9452-38acdaaaa583" />
+<img width="781" height="437" alt="Screenshot 2026-07-26 153623" src="https://github.com/user-attachments/assets/6f975d34-93cc-4810-8713-a62497074925" />
 
- 
-- Using the details from the process creation event, I wrote a Sigma rule targeting the file_creation log source. The rule looks for any file creation performed by cmd.exe where the resulting filename ends in .txt
-
----------------------------
-2: Investigating the Ransomware Activity
-
-Ref: Uncoder.IO translating the Sigma rule from Sigma format into an ElastAlert
-<img width="2014" height="472" alt="Uncoder rule to query conversion" src="https://github.com/user-attachments/assets/35dc8bdb-f80c-443e-8935-fc8fa1b92758" />
-
-Ref: Kibana results for the translated query, showing the File Created event (Event ID 11)
-<img width="2267" height="701" alt="File creation " src="https://github.com/user-attachments/assets/7385ba1a-45a9-4f3d-a09c-95430ac7bfb5" />
-
-- I used Uncoder.IO to translate the Sigma rule into an ElasticAlert/Lucene query, then ran the generated query in Kibana. The query (process.executable.text:"cmd.exe" AND file.path.text:*.txt) returned a single matching event - Sysmon Event ID 11 (File Created) - confirming cmd.exe created YOUR_FILES.txt on the Administrator's desktop at the same timestamp as the process creation event.
+- Inside PC2 successfully loaded "https://10.1.1.101" in its browser, confirming HTTPS access to HTTP Server2
 
 
----------------------------
-3: Building the Scheduled Task Detection Sigma Rule
+<img width="577" height="97" alt="Screenshot 2026-07-26 153721" src="https://github.com/user-attachments/assets/e74a07e8-0a62-4a49-90cd-616798c3088c" />
 
-<img width="1019" height="404" alt="Sigma rule schtasks" src="https://github.com/user-attachments/assets/ac068e8f-7d2b-4705-a52c-23fb13b35f13" />
-
-- I then wrote a second Sigma rule under the process_creation log source, detecting any execution of schtasks.exe whose command line contains both schtasks and create. I added a filter to exclude events where the user is NT AUTHORITY\SYSTEM, so the rule focuses on non-system accounts creating scheduled tasks 
----------------------------
-4: Investigating the Scheduled Task Activity
-
-Ref: Translating and Validating the Scheduled Task Rule
-<img width="1878" height="529" alt="Screenshot 2026-07-19 011856" src="https://github.com/user-attachments/assets/9076b744-4759-43a7-bb21-abf2192edac6" />
-
-Ref: Kibana results showing the schtasks.exe process creation event
-<img width="2265" height="800" alt="Schtask exe creation" src="https://github.com/user-attachments/assets/df7ce50a-9ec9-4151-8b6c-b5acdfddcb69" />
-
-- Next, I pivoted to the scheduled task logs. I searched Kibana using the query from Uncoder.IO - (process.executable.txt:"schtasks".exe AND (process.command_line.txt:"*schtasks*" AND process.command_line:*create*)) AND NOT (User:NT AUTHORITY\SYSTEM) - This surfaced a process creation event showing schtasks.exe being run with /Create /SC ONCE /TN spawn /TR C:\windows\system32\cmd.exe /ST 20:10, spawned as a child of cmd.exe, revealing a scheduled task named spawn set to run at 20:10.
-
-
----------------------------
-5:  Summarizing the Findings
-
-
-<img width="2247" height="722" alt="Content of text file" src="https://github.com/user-attachments/assets/da8c1a56-7e3b-49d8-844d-213643ee3ab9" />
-
-Piecing both detections together, the attack chain was:
-- An unknown entity used schtasks.exe to create a scheduled task named spawn, set to trigger cmd.exe at 20:10.
-- The cmd.exe execution was then used to drop a ransom note file, YOUR_FILES.txt, on the Administrator's desktop, containing the text "T1486 - Purelocker Ransom Note."
-- Both events were captured via Sysmon Event ID 1 and Event ID 11 and both were successfully detected using the custom Sigma rules built during this lab.
-
-
-
-
+Confirmed via "show access-lists" that hit counters incremented as expected: 
+ - 6 matches on the PC1 -> Server1 HTTP rule
+ - 6 matches on the PC2 -> Server2 HTTPS rule
+ - 30 matches on the deny rule
