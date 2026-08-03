@@ -1,19 +1,20 @@
-# Router ACL-Based Network Segmentation Lab
+# Apache Web Server & Suricata Network Intrusion Detection Lab
 
 ## Objective
-### This project focused on implementing traffic segmentation on a Cisco router using extended access control lists (ACLs). The goal was to restrict internal lateral communication between hosts based on protocol and subnet, allowing only specific, sanctioned traffic between endpoints while blocking everything else. The lab also involved verifying rule behavior through test cases and evaluating ACL placement and performance.
+### The objective of this lab is to deploy an Apache web server and configure Suricata as a network intrusion detection system (IDS) to monitor and analyze web traffic for suspicious or malicious activity.
 
 ### Skills Learned
-- Designing and implementing extended ACLs to control traffic by protocol, source, and destination
-- Applying least-privilege principles to internal network segmentation
-- Testing and validating ACL rules using protocol-specific traffic (HTTP and HTTPS)
-- Understanding ACL placement strategy and its impact on performance
-- Monitoring ACL hit counts to confirm rule effectiveness
+- Installed, configured, and managed an Apache web server on Ubuntu
+- Configured Suricata to monitor network traffic and implemented detection rules
+- Analyzed HTTP traffic and generated reconnaissance activity using Nmap
+- Investigated Apache access.log, Suricata fast.log and eve.json telemetry
+- Created and tested custom Suricata rules to identify suspicious web activity.
 
 ### Tools Used
-- Cisco IOS for ACL configuration
-- Packet Tracer for topology simulation
-- Browser-based testing for traffic verification
+- Ubuntu Linux
+- Apache web server
+- Suricata IDS/IPS
+- Nmap
 
 ## Steps
 
