@@ -18,42 +18,38 @@
 
 ## Steps
 
-1: Network Topology
+1: Apache Web Server Installation
 
-<img width="1192" height="490" alt="Screenshot 2026-07-26 154208" src="https://github.com/user-attachments/assets/2af71be6-fda2-497b-b4d0-eb00a7b6e493" />
+<img width="1177" height="440" alt="Screenshot 2026-07-31 235945" src="https://github.com/user-attachments/assets/0af56a76-8a97-42de-932a-9c2e0bf3bc24" />
+<img width="1205" height="762" alt="Screenshot 2026-08-01 001500" src="https://github.com/user-attachments/assets/067ce9ed-9c39-4cbc-b8d3-69745a7038c1" />
 
-Built the topology in Cisco Packet Tracer with Router1 segmenting two internal subnets:
- - 10.1.1.0/24 - HTTP Server1 (10.1.1.100) and HTTP Server2 (10.1.1.101), behind Switch1 
- - 10.1.2.0/24 - Inside PC1 (10.1.2.101) and Inside PC2 (10.1.2.102), behind Multilayer Switch0
-
----
-
-2: Created extended ACL on Router1
-
-<img width="550" height="102" alt="Screenshot 2026-07-26 152529" src="https://github.com/user-attachments/assets/0de8ea01-0721-49ad-8d4b-675d735b44b2" />
-
-- Line 10: Inside PC1 (10.1.2.101) can reach HTTP Server1 (10.1.1.100) on HTTP only
-- Line 20: Inside PC2 (10.1.2.102) can reach HTTP Server2 (10.1.1.101) on HTTPS only
-- Line 30: Explicit deny for all other traffic from 10.1.2.0/24 to 10.1.1.0/24
-- Line 40: All other outbound traffic from 10.1.2.0/24 permitted
+Verifying status of Apache:
+ - Used the command "sudo systemctl status apache2"  with root privileges to verify if the web server is running. Also verified in the web browser
+ - The IP address of the server is 192.168.1.127
 
 ---
 
-3: Verified the configuration with test cases
+2: Generating Traffic To Apache
 
-<img width="845" height="530" alt="Screenshot 2026-07-26 153542" src="https://github.com/user-attachments/assets/95c8546a-9ea4-4400-8c6a-0b69b57dce11" />
+<img width="2397" height="741" alt="Screenshot 2026-08-02 171150" src="https://github.com/user-attachments/assets/b90b3bc9-199a-41f4-9bda-2ecaec679b67" />
 
-- Inside PC1 successfully loaded "http://10.1.1.100" in its browser, confirming HTTP access to HTTP Server1
+- Generating test traffic from Kali and viewing the connection from the "access.log" file. This file logs any connections that are made to the web server
+- Used the command "curl http://192.168.1.127" from Kali to send successful GET requests to Apache
 
+---
 
-<img width="781" height="437" alt="Screenshot 2026-07-26 153623" src="https://github.com/user-attachments/assets/6f975d34-93cc-4810-8713-a62497074925" />
+3: Suricata Installation and Configuration
 
-- Inside PC2 successfully loaded "https://10.1.1.101" in its browser, confirming HTTPS access to HTTP Server2
+<img width="1207" height="510" alt="Screenshot 2026-08-01 151212" src="https://github.com/user-attachments/assets/edde7baa-3806-49c5-9d26-ad277e113280" />
 
+- Successfully installed and confirmed Suricata is loaded, enabled, and actively running it's latest version using the config at /etc/suricata/suricata.yaml
 
-<img width="577" height="97" alt="Screenshot 2026-07-26 153721" src="https://github.com/user-attachments/assets/e74a07e8-0a62-4a49-90cd-616798c3088c" />
+<img width="1038" height="430" alt="Screenshot 2026-08-01 152107" src="https://github.com/user-attachments/assets/d4c14446-1abe-4fa7-bab5-5cc3ddd1c613" />
 
-Confirmed via "show access-lists" that hit counters incremented as expected: 
- - 6 matches on the PC1 -> Server1 HTTP rule
- - 6 matches on the PC2 -> Server2 HTTPS rule
- - 30 matches on the deny rule
+- Defining HOME_NET as 192.168.1.0/24, telling Suricata which addresses represent the internal/local network for alerting purposes
+- Set EXTERNAL_NET as !$HOME_NET, meaning anything outside the home network is treated as external
+
+<img width="1038" height="158" alt="Screenshot 2026-08-01 151817" src="https://github.com/user-attachments/assets/75f9248b-dff8-4e86-b705-139f10315bb0" />
+
+- Configuring Suricata to detect traffic and listen on the enp0s3 interface
+- This will detect any traffic to 192.168.1.127 which is the Apache web server
