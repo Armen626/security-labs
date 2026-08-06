@@ -53,3 +53,35 @@ Verifying status of Apache:
 
 - Configuring Suricata to detect traffic and listen on the enp0s3 interface
 - This will detect any traffic to 192.168.1.127 which is the Apache web server
+
+---
+
+4: Suricata Rule Creation
+
+<img width="1165" height="225" alt="Screenshot 2026-08-03 194555" src="https://github.com/user-attachments/assets/fc90e91d-d14f-4d75-9309-ede209e2ca9f" />
+
+- Created a custom rule file name "local.rules" to alert on ICMP pings and TCP SYN connection attempts to SSH (22), FTP (21), and HTTP (80) on the web server
+
+---
+
+5. Testing Suricata and Apache Alert Detection
+
+<img width="2386" height="745" alt="Screenshot 2026-08-04 160427" src="https://github.com/user-attachments/assets/87be1bd4-8874-49f5-a44e-86e4957c012b" />
+
+- Ran a full port scan (nmap -p 1-1000 192.168.1.127) from Kali, confirming only SSH (22) and HTTP (80) were open
+
+
+<img width="1202" height="113" alt="Screenshot 2026-08-04 160713" src="https://github.com/user-attachments/assets/09adc573-d5ca-4cc4-8d73-5eb128eead03" />
+
+- Using "grep" to filter log output to isolate just the HTTP related alerts from the noisier full log
+
+
+<img width="2266" height="419" alt="Screenshot 2026-08-04 161753" src="https://github.com/user-attachments/assets/b6e84bed-405b-470b-8af6-7e822911046a" />
+
+- Ran "gobuster dir" against the web server using the "dirb/common.txt" wordlist, enumerating directories and returning "index.html" (200) along with several 403-protected paths
+- Correlated the scan in Apache's access.log, filtering for "password" related requests to show gobuster systematically probing for password-reset/change endpoints
+
+
+
+
+
