@@ -2,7 +2,7 @@
 
 ## Overview
 
-This investigation analyzes a successful local privilege-escalation attempt exploiting **CVE-2025-32463**, a vulnerability affecting `sudo` chroot functionality. The activity began under the `devuser` account and progressed from host reconnaissance and exploit download to execution of a malicious proof-of-concept script. Process telemetry subsequently showed `/bin/bash` and follow-on discovery commands executing as **root**, providing strong evidence that privilege escalation succeeded.
+This investigation analyzes a successful local privilege-escalation attempt exploiting **CVE-2025-32463**, a vulnerability affecting `sudo` chroot functionality. The activity began under the `devuser` account and progressed from host reconnaissance and exploit download to execution of a malicious script. Process telemetry showed `/bin/bash` followed with more discovery commands executing as **root**, providing strong evidence that privilege escalation succeeded.
 
 > **Note:** This investigation was performed in a controlled security lab for defensive analysis and SOC practice.
 
@@ -128,57 +128,11 @@ cat /etc/os-release
 
 The transition from `devuser`-owned exploit activity to root-owned shell execution is the strongest evidence that the local privilege escalation succeeded.
 
-<p align="center">
-  <img src="images/06-root-shell-confirmation.png" alt="Process telemetry showing bash and follow-on commands executing as root" width="100%">
-</p>
 
----
+<img width="1900" height="650" alt="Screenshot 2026-09-08 221704" src="https://github.com/user-attachments/assets/214b4761-e6a4-4437-b9f4-2ec345cffebd" />
 
-## Attack Chain
 
-```
-sudo -V
-   ↓
-Checks sudo version
 
-wget ...CVE-2025-32463...sudo-chwoot.sh
-   ↓
-Downloads CVE exploit
-
-chmod +x sudo-chwoot.sh
-   ↓
-Makes exploit executable
-
-/home/devuser/sudo-chwoot.sh
-   ↓
-Executes exploit
-
-mktemp -d /tmp/sudowoot.stage.XXXXXX
-   ↓
-Creates staging environment
-
-Creates malicious shared library
-   ↓
-sudo -R woot woot
-   ↓
-Attempts CVE-2025-32463 privilege escalation
-
-setreuid(0,0) / setregid(0,0)
-   ↓
-Attempts to become UID/GID 0
-
-/bin/bash
-   ↓
-Intended root shell
-
-rm -rf $STAGE
-   ↓
-Deletes staging artifacts
-   ↓
-id
-Confirms successful privilege escalation from "devuser" to root<img width="1676" height="594" alt="Screenshot 2026-09-07 131519" src="https://github.com/user-attachments/assets/3cc88430-9206-4db6-ab5c-0668fa28287c" />
-
-```
 
 ---
 
@@ -189,7 +143,6 @@ Confirms successful privilege escalation from "devuser" to root<img width="1676"
 | **T1068** | Exploitation for Privilege Escalation | CVE-2025-32463 exploit was executed to transition from `devuser` to root. |
 | **T1105** | Ingress Tool Transfer | `wget` downloaded `sudo-chwoot.sh` from GitHub to the target host. |
 | **T1059.004** | Command and Scripting Interpreter: Unix Shell | `bash`/shell processes were used to execute the exploit and follow-on commands. |
-| **T1548.003** | Abuse Elevation Control Mechanism: Sudo and Sudo Caching | The exploit abused `sudo -R` as part of the privilege-escalation path. |
 | **T1033** | System Owner/User Discovery | `whoami` and `id` were used to identify or verify the active user context. |
 | **T1082** | System Information Discovery | `uname -a` and `cat /etc/os-release` gathered host and operating-system information. |
 
@@ -209,20 +162,18 @@ Confirms successful privilege escalation from "devuser" to root<img width="1676"
 
 ---
 
-## Recommended Response Actions
+## Response Actions
 
 1. **Contain the affected host** if the activity is not authorized testing.
 2. **Upgrade `sudo` to a vendor-patched release** that remediates CVE-2025-32463.
 3. **Review authentication and SSH activity** to determine how `devuser` access was obtained.
 5. **Hunt for additional root-level commands** executed after privilege escalation.
-6. **Monitor for suspicious `sudo -R` usage**, temporary chroot structures, and execution from `/tmp`.
-7. **Rotate credentials or keys** associated with the affected account if unauthorized access is suspected.
 
 ---
 
 ## Investigation Conclusion
 
-**Verdict: True Positive – Successful Privilege Escalation**
+**True Positive – Successful Privilege Escalation**
 
 The investigation identified a complete privilege-escalation chain associated with **CVE-2025-32463**. `devuser` checked the target environment, downloaded and executed a CVE-specific exploit, and created the expected temporary staging environment. Static review of the script showed the malicious shared-library and `sudo -R` logic used to obtain UID/GID 0. Process telemetry then recorded `/bin/bash` and follow-on discovery commands executing as `root`. Taken together, the alert, terminal history, script contents, and process telemetry provide strong evidence that exploitation succeeded.
 
@@ -232,23 +183,9 @@ The investigation identified a complete privilege-escalation chain associated wi
 
 - SOC alert triage and validation
 - Linux process and terminal-history analysis
-- CVE exploit behavior analysis
 - MITRE ATT&CK mapping
 - Timeline reconstruction and evidence correlation
 - Root-cause analysis and remediation planning
 
 ---
 
-## Repository Structure
-
-```text
-CVE-2025-32463-SOC-Investigation/
-├── README.md
-└── images/
-    ├── 01-alert-overview.png
-    ├── 02-terminal-history-recon-download.png
-    ├── 03-exploit-execution-staging.png
-    ├── 04-exploit-script-analysis.png
-    ├── 05-devuser-staging-process.png
-    └── 06-root-shell-confirmation.png
-```
