@@ -47,7 +47,7 @@ I am a cybersecurity student passionate about defensive security, threat detecti
 | Network Security | pfSense, Wireshark, Nmap, Snort | Enterprise Security Home Lab |
 | Vulnerability Assessment | Nessus, OpenVAS | Enterprise Security Home Lab |
 | Endpoint Monitoring | Sysmon, Windows Event Logs | Enterprise Security Home Lab |
-| Cloud Security | Microsoft Sentinel, Azure | Azure Sentinel Honeypot Lab |
+| Cloud Security | AWS, CloudTrail | AWS Cloud Security Monitoring Lab |
 # Tools
 ## SIEM
 [![Splunk](https://img.shields.io/badge/Splunk-000000?style=for-the-badge&logo=splunk&logoColor=white)](https://www.splunk.com/)
