@@ -12,4 +12,21 @@ The objective of this lab is to design and build a secure AWS VPC with multiple 
 - Deploy CrowdStrike Falcon EDR to endpoints for endpoint telemetry, threat detection, and response.
 - Practiced troubleshooting Linux services, permissions, EC2 resource constraints, ports, security groups, and cross-subnet connectivity.
   
+## Network Topology
 
+<img width="1694" height="691" alt="Screenshot 2026-09-16 160255" src="https://github.com/user-attachments/assets/8a4054d2-1605-4747-bd69-2e106126a769" />
+
+I configured a VPC using 192.168.0.0/16 and divided it into three subnets to separate public-facing web server, internal servers, and security monitoring.
+
+| Subnet | CIDR | Resources | Purpose |
+| --- | --- | --- | --- |
+| Public | `192.168.2.0/24` | Nginx web server, bastion host, NAT Gateway | Hosts public-facing services and provides outbound internet connectivity for private resources. |
+| Private | `192.168.1.0/24` | Splunk server, Samba file server, MySQL database server | Hosts internal applications, shared files, and centralized logging. |
+| SOC | `192.168.3.0/24` | Windows SOC workstation with Splunk forwarder | Provides a dedicated environment for security monitoring and investigation. |
+
+Routing and Access Controls
+- The public subnet’s default route points to the Internet Gateway.
+- The private and SOC subnets default routes point to the NAT Gateway in the public subnet for internet access.
+- Each route table includes 192.168.0.0/16 -> local for communication within the VPC.
+- Security groups added on each instance for inbound and outbound traffic control
+- Access from the SOC workstation to the Samba file share uses TCP 445 over the VPC’s internal network.
