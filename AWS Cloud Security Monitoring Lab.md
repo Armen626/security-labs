@@ -30,3 +30,60 @@ Routing and Access Controls
 - Each route table includes 192.168.0.0/16 -> local for communication within the VPC.
 - Security groups added on each instance for inbound and outbound traffic control
 - Access from the SOC workstation to the Samba file share uses TCP 445 over the VPC’s internal network.
+
+----
+
+# Server Setup and Configuration
+
+## Samba File Server
+
+<img width="696" height="191" alt="Screenshot 2026-09-21 213959" src="https://github.com/user-attachments/assets/92f61c70-d36d-4ff3-97c4-8dfab0097ffa" />
+<img width="622" height="291" alt="Screenshot 2026-09-21 213224" src="https://github.com/user-attachments/assets/06521b6c-ab31-4eff-a012-c0e9e7e8ec6b" />
+
+ - Installed Samba on an Ubuntu EC2 for file sharing and is located in private subnet. 
+ - I configured a Samba file share on my Ubuntu file server to provide centralized file storage. I created a shared directory at /home/ubuntu/share and configured it in the Samba configuration file to allow authorized clients to browse, read, and write files. I also configured the server to require authenticated access instead of allowing guest connections.
+
+
+    Security group:
+   
+       - Allow inbound to port 445 from 192.168.3.0/24 (SOC Subnet)
+       - Allow inbound to port 22 from 68.187.54.129/32 (My IP)
+   
+
+## MySQL Server
+
+<img width="625" height="167" alt="Screenshot 2026-09-21 214727" src="https://github.com/user-attachments/assets/60c629af-0c6d-43bb-842b-96f6e8927807" />
+
+ - I installed and configured MySQL Server on my Ubuntu database server. After installation, I used “systemctl status mysql” to verify that the MySQL service was enabled and actively running.
+
+
+   Security group:
+   
+       - Allow inbound to port 3306 from 192.168.1.0/24 (SOC Subnet)
+       - Allow inbound to port 22 from 68.187.54.129/32 (My IP)
+   
+
+## Splunk Server
+
+<img width="1276" height="794" alt="Screenshot 2026-09-06 201935" src="https://github.com/user-attachments/assets/5fdebe45-f517-42d6-9e52-00c973977246" />
+
+ - Installed and configured Splunk for centralized log management to collect VPC flow logs, CloudTrail, and S3 logs
+ - Confirmed Splunk is running by checking if port 8000 is listening and URL is accessable
+
+
+      Security group:
+   
+       - Allow inbound to port 8000 from 192.168.3.134/32 (SOC Workstation)
+       - Allow inbound to port 8088 from  sg-0284be47ea87a9fae (Splunk Lambda Forwarder)
+       - Allow inbound to port 22 from 68.187.54.129/32 (My IP)
+
+   
+
+    
+
+
+
+
+
+
+
