@@ -107,6 +107,12 @@ principle of least privilege.
 - I attached a policy to the VPC Flow Log role that allows it to work with CloudWatch Logs
 - It also allows the role to write events to any log group and can create log streams
 
+----
+
+# Forwarding AWS Logs to Splunk via Lambda Function
+
+Used a published AWS Lambda function to forward logs from Amazon CloudWatch Logs to Splunk using the HTTP Event Collector (HEC). This provides centralized log aggregation in Splunk for AWS security telemetry such as VPC Flow Logs, CloudTrail activity, and GuardDuty findings.
+
 
 
 
