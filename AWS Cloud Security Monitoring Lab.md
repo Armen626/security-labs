@@ -1,7 +1,7 @@
 # AWS Cloud Security Monitoring Lab
 
 ## Objective
-The objective of this lab is to design and build a secure AWS VPC with multiple segmented subnets to simulate an enterprise network environment. The lab focuses on practicing AWS networking, least-privilege access control, security monitoring, log collection, and incident detection using services and tools such as IAM, S3, Splunk, and endpoint security solutions.
+The objective of this lab is to design and build a secure AWS VPC with multiple segmented subnets to simulate an enterprise network environment. The lab focuses on practicing AWS networking, least-privilege access control, security monitoring, log collection, and incident detection using services and tools such as IAM, S3, Splunk, and endpoint security tools.
 
 ## Skills Learned
 - Configured AWS networking components including Internet Gateways, NAT Gateways, route tables, and security groups to control communication between public and private resources and subnets.
@@ -59,7 +59,7 @@ Routing and Access Controls
 
    Security group:
    
-       - Allow inbound to port 3306 from 192.168.1.0/24 (SOC Subnet)
+       - Allow inbound to port 3306 from 192.168.1.0/24 (Private Subnet)
        - Allow inbound to port 22 from 68.187.54.129/32 (My IP)
    
 
@@ -75,14 +75,37 @@ Routing and Access Controls
    
        - Allow inbound to port 8000 from 192.168.3.134/32 (SOC Workstation)
        - Allow inbound to port 8088 from  sg-0284be47ea87a9fae (Splunk Lambda Forwarder)
-       - Allow inbound to port 22 from 68.187.54.129/32 (My IP)
+       - Allow inbound to port 22 from MyAdministrativeIP/32 
 
    
+----
 
-    
+# IAM Roles and Access Control
+
+I implemented IAM users, groups, policies, and service roles to follow the
+principle of least privilege.
+
+
+## IAM Users and Groups
+
+- **IT** - Access to resources required for infrastructure administration.
+- **HR** - Access limited to HR-related S3 resources.
+- **Finance** - Access limited to Finance-related S3 resources.
+- **SOC** - Access to security resources required for monitoring and incident response.
+
+
+## VPC Flow Logs IAM Role
+
+<img width="818" height="458" alt="image" src="https://github.com/user-attachments/assets/680b5a63-f5a7-441f-8ba6-48c446486076" />
+
+- Created an IAM role to allow the VPC Flow Logs service to assume the role and publish network flow records to CloudWatch logs
 
 
 
+<img width="1100" height="693" alt="Screenshot 2026-09-22 225141" src="https://github.com/user-attachments/assets/defe2b85-40db-45e4-89ee-7ce1c1df171c" />
+
+- I attached a policy to the VPC Flow Log role that allows it to work with CloudWatch Logs
+- It also allows the role to write events to any log group and can create log streams
 
 
 
