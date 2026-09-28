@@ -111,7 +111,31 @@ principle of least privilege.
 
 # Forwarding AWS Logs to Splunk via Lambda Function
 
-Used a published AWS Lambda function to forward logs from Amazon CloudWatch Logs to Splunk using the HTTP Event Collector (HEC). This provides centralized log aggregation in Splunk for AWS security telemetry such as VPC Flow Logs, CloudTrail activity, and GuardDuty findings.
+Configured a Lambda Function to forward logs from CloudWatch to Splunk using the HTTP Event Collector (HEC). This provides centralized log aggregation in Splunk for AWS security telemetry such as VPC Flow Logs, CloudTrail activity, and GuardDuty findings.
+
+I made two separate log pipelines:
+
+**VPC Flow Logs**
+- CloudWatch Logs/Log Group
+- Subscription Filter
+- Lambda
+- Splunk HEC
+- index="aws_vpc"
+
+<img width="854" height="673" alt="Screenshot 2026-09-27 204654" src="https://github.com/user-attachments/assets/cbbf656b-0532-415d-9a2b-d777743a80f6" />
+
+
+**CloudTrail Logs**
+- CloudWatch Logs/Log Group
+- Created log trail to assign to Log group
+- Subscription Filter
+- Lambda
+- Splunk HEC
+- index="aws_cloudtrail"
+
+<img width="809" height="674" alt="Screenshot 2026-09-27 204727" src="https://github.com/user-attachments/assets/dafc5603-304a-478c-8bf0-8a78cb6d50ec" />
+
+
 
 
 
