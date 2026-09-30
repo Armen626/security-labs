@@ -8,7 +8,7 @@ The objective of this lab is to design and build a secure AWS VPC with multiple 
 - Created IAM users and groups and implemented identity-based policies following the principle of least privilege.
 - Designed a segmented VPC containing separate public, private, and SOC subnets based on system roles and security requirements.
 - Deployed and configured Splunk for centralized security monitoring and log collection.
-- Integrate AWS security logs, Nginx web server logs, and Samba file server logs into Splunk for centralized log aggregation and monitoring.
+- Integrate AWS security logs into Splunk for centralized log aggregation and monitoring.
 - Deploy CrowdStrike Falcon EDR to endpoints for endpoint telemetry, threat detection, and response.
 - Practiced troubleshooting Linux services, permissions, EC2 resource constraints, ports, security groups, and cross-subnet connectivity.
   
@@ -111,7 +111,7 @@ principle of least privilege.
 
 # Forwarding AWS Logs to Splunk via Lambda Function
 
-Configured a Lambda Function to forward logs from CloudWatch to Splunk using the HTTP Event Collector (HEC). This provides centralized log aggregation in Splunk for AWS security telemetry such as VPC Flow Logs, CloudTrail activity, and GuardDuty findings.
+Configured a Lambda Function to forward logs from CloudWatch to Splunk using the HTTP Event Collector (HEC). This provides centralized log aggregation in Splunk for AWS security telemetry such as VPC Flow Logs and CloudTrail activity
 
 I made two separate log pipelines:
 
@@ -135,6 +135,15 @@ I made two separate log pipelines:
 
 <img width="809" height="674" alt="Screenshot 2026-09-27 204727" src="https://github.com/user-attachments/assets/dafc5603-304a-478c-8bf0-8a78cb6d50ec" />
 
+----
+
+## I confirmed that VPC Flow logs and CloudTrail logs were successfully forwarded and indexed by Splunk
+
+**VPC Flow Logs**
+<img width="1628" height="843" alt="Screenshot 2026-09-27 121537" src="https://github.com/user-attachments/assets/1f40d141-67d1-462a-aa1c-b2c2f776b2d7" />
+
+**CloudTrail Logs**
+<img width="1297" height="790" alt="Screenshot 2026-09-27 202223" src="https://github.com/user-attachments/assets/73f13275-57df-4e41-9a2c-701a0cc691ff" />
 
 
 
