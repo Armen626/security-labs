@@ -157,9 +157,21 @@ I troubleshot this by checking each step of the logging pipeline:
  - Confirmed CloudWatch subscription filter was attached to Lambda function
  - Verified Splunk server was listening on '0.0.0.0:8088' for accepting HEC connections
  - Used tcpdump to check whether connections are being accepted on port 8088
+   
+   <img width="1431" height="564" alt="Screenshot 2026-09-30 211023" src="https://github.com/user-attachments/assets/131712a5-8f76-4629-acd5-65a5d2153780" />
+
+
  - Identified that Ubuntu UFW was configured with a default-deny inbound policy and was not allowing TCP 8088.
  - Updated UFW and AWS security group rules to permit HEC traffic.
+
+<img width="1429" height="655" alt="Screenshot 2026-09-30 205312" src="https://github.com/user-attachments/assets/e68389af-2c73-43f8-8ef0-a34fac7693a1" />
+
+ 
  - Verified the TCP handshake and confirmed successful Lambda-to-Splunk communication.
+
+<img width="1465" height="683" alt="Screenshot 2026-09-30 203802" src="https://github.com/user-attachments/assets/821c42fd-95c9-48a2-b94e-7d3d48db2968" />
+
+
 
 After correcting the firewall and security group configuration, the Lambda function successfully forwarded AWS logs to Splunk.
 
