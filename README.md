@@ -17,7 +17,7 @@ I am a cybersecurity student passionate about defensive security, threat detecti
 [![Splunk](https://img.shields.io/badge/Splunk-000000?style=for-the-badge&logo=splunk&logoColor=white)](https://www.splunk.com/)
 [![Elastic](https://img.shields.io/badge/Elastic-005571?style=for-the-badge&logo=elastic&logoColor=white)](https://www.elastic.co/)
 [![Wazuh](https://img.shields.io/badge/Wazuh-0266C8?style=for-the-badge)](https://wazuh.com/)
-[![Microsoft Sentinel](https://img.shields.io/badge/Microsoft%20Sentinel-0078D4?style=for-the-badge&logo=microsoftazure&logoColor=white)](https://azure.microsoft.com/products/microsoft-sentinel)
+
 ## Network
 [![Wireshark](https://img.shields.io/badge/Wireshark-1679A7?style=for-the-badge&logo=wireshark&logoColor=white)](https://www.wireshark.org/)
 [![pfSense](https://img.shields.io/badge/pfSense-212121?style=for-the-badge)](https://www.pfsense.org/)
