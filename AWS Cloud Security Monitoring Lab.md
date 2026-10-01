@@ -146,6 +146,21 @@ I made two separate log pipelines:
 <img width="1297" height="790" alt="Screenshot 2026-09-27 202223" src="https://github.com/user-attachments/assets/73f13275-57df-4e41-9a2c-701a0cc691ff" />
 
 
+----
 
+# Troubleshooting
+
+While trying to forward VPC Flow logs to Splunk, CloudWatch was successfully using the Lambda function, but the function initially timed out while attempting to connect to the Splunk HEC endpoint.
+
+I troubleshot this by checking each step of the logging pipeline:
+ - Confirmed VPC Flow logs were being written to CloudWatch Logs
+ - Confirmed CloudWatch subscription filter was attached to Lambda function
+ - Verified Splunk server was listening on '0.0.0.0:8088' for accepting HEC connections
+ - Used tcpdump to check whether connections are being accepted on port 8088
+ - Identified that Ubuntu UFW was configured with a default-deny inbound policy and was not allowing TCP 8088.
+ - Updated UFW and AWS security group rules to permit HEC traffic.
+ - Verified the TCP handshake and confirmed successful Lambda-to-Splunk communication.
+
+After correcting the firewall and security group configuration, the Lambda function successfully forwarded AWS logs to Splunk.
 
 
