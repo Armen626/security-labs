@@ -14,7 +14,7 @@ The objective of this lab is to design and build a secure AWS VPC with multiple 
   
 ## Network Topology
 
-<img width="1694" height="691" alt="Screenshot 2026-09-16 160255" src="https://github.com/user-attachments/assets/8a4054d2-1605-4747-bd69-2e106126a769" />
+<img width="2364" height="925" alt="Screenshot 2026-10-01 074607" src="https://github.com/user-attachments/assets/9fadbf4c-d194-462b-979d-db80247a9238" />
 
 I configured a VPC using 192.168.0.0/16 and divided it into three subnets to separate public-facing web server, internal servers, and security monitoring.
 
