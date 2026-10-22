@@ -172,7 +172,52 @@ I troubleshot this by checking each step of the logging pipeline:
 <img width="1465" height="683" alt="Screenshot 2026-09-30 203802" src="https://github.com/user-attachments/assets/821c42fd-95c9-48a2-b94e-7d3d48db2968" />
 
 
-
 After correcting the firewall and security group configuration, the Lambda function successfully forwarded AWS logs to Splunk.
+
+
+
+---- 
+
+
+# Splunk Detection Rules
+
+<img width="1784" height="648" alt="Screenshot 2026-10-18 170903" src="https://github.com/user-attachments/assets/02ff1f3f-6e4d-47dc-8dd0-7d91e6983fc5" />
+
+## Created detection rules in Splunk to trigger alerts on:
+- Deletion and modifying CloudTrail logs
+- Exposing security group to allow traffic from 0.0.0.0/0
+- Failed login attempts to AWS console
+
+# Triggered Alerts
+<img width="1332" height="570" alt="Screenshot 2026-10-21 195517" src="https://github.com/user-attachments/assets/6a2a56d2-2647-4ce8-8e4a-c9737d6f9251" />
+
+<img width="2270" height="313" alt="Screenshot 2026-10-20 205852" src="https://github.com/user-attachments/assets/aead1d9a-c9ee-447a-8568-897aab87bc7c" />
+
+- Showing triggered alerts from "CloudTrail Logging Tampering" detection rule 
+
+
+<img width="1340" height="319" alt="Screenshot 2026-10-20 210343" src="https://github.com/user-attachments/assets/2b11efe6-0b48-421d-91e2-5d8089b7533b" />
+
+<img width="2256" height="294" alt="Screenshot 2026-10-20 210850" src="https://github.com/user-attachments/assets/95667529-2c07-4a4d-9164-d65b73fa4b9d" />
+
+- Triggered detection for granting inbound public access to a security group
+
+
+<img width="1339" height="577" alt="Screenshot 2026-10-20 210356" src="https://github.com/user-attachments/assets/473abc4e-3f03-40fa-ae16-7dfda81295c3" />
+
+- Triggered rule caused by over three failed login attempts from the same source IP to the AWS console in the span of five minutes
+  
+
+
+
+
+
+
+
+
+
+
+
+
 
 
