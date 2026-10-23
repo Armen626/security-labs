@@ -9,7 +9,7 @@ The objective of this lab is to design and build a secure AWS VPC with multiple 
 - Designed a segmented VPC containing separate public, private, and SOC subnets based on system roles and security requirements.
 - Deployed and configured Splunk for centralized security monitoring and log collection.
 - Integrate AWS security logs into Splunk for centralized log aggregation and monitoring.
-- Deploy CrowdStrike Falcon EDR to endpoints for endpoint telemetry, threat detection, and response.
+- Deploy Wazuh XDR to endpoints for endpoint telemetry, threat detection, and response.
 - Practiced troubleshooting Linux services, permissions, EC2 resource constraints, ports, security groups, and cross-subnet connectivity.
   
 ## Network Topology
@@ -188,12 +188,36 @@ After correcting the firewall and security group configuration, the Lambda funct
 - Exposing security group to allow traffic from 0.0.0.0/0
 - Failed login attempts to AWS console
 
-# Triggered Alerts
+**I also set up Amazon SNS to get notified about the triggered alerts via email**
+ 
+
+## Detection Rule #1: CloudTrail Logging Tampering
+
+Objective:
+Detects and alert on any deleted or suspended recording and log delivery for a trail in CloudTrail. This would be a security threat, because it can reduce visibility of activity in the cloud and poses as a large detection gap.
+
+
+**SPL Detection Query:**
+
+`index=aws_cloudtrail
+| spath
+| search eventSource="cloudtrail.amazonaws.com"
+    (eventName="StopLogging" OR eventName="DeleteTrail")
+| eval actor=coalesce('userIdentity.arn',
+                      'userIdentity.userName')
+| eval outcome=if(isnull(errorCode),"Success","Failed")
+| table _time eventName actor sourceIPAddress
+        awsRegion outcome errorCode eventID
+| sort - _time`
+
+
+
+
 <img width="1332" height="570" alt="Screenshot 2026-10-21 195517" src="https://github.com/user-attachments/assets/6a2a56d2-2647-4ce8-8e4a-c9737d6f9251" />
 
 <img width="2270" height="313" alt="Screenshot 2026-10-20 205852" src="https://github.com/user-attachments/assets/aead1d9a-c9ee-447a-8568-897aab87bc7c" />
 
-- Showing triggered alerts from "CloudTrail Logging Tampering" detection rule 
+- Showing triggered alerts from "CloudTrail Logging Tampering" detection rule after deleting log trail
 
 
 <img width="1340" height="319" alt="Screenshot 2026-10-20 210343" src="https://github.com/user-attachments/assets/2b11efe6-0b48-421d-91e2-5d8089b7533b" />
