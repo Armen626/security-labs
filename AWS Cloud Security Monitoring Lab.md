@@ -193,7 +193,7 @@ After correcting the firewall and security group configuration, the Lambda funct
 
 ## Detection Rule #1: CloudTrail Logging Tampering
 
-Objective:
+**Objective:**
 Detects and alert on any deleted or suspended recording and log delivery for a trail in CloudTrail. This would be a security threat, because it can reduce visibility of activity in the cloud and poses as a large detection gap.
 
 
@@ -210,27 +210,74 @@ Detects and alert on any deleted or suspended recording and log delivery for a t
         awsRegion outcome errorCode eventID
 | sort - _time`
 
+**Detection Logic:**
 
+- The API events that trigger this rule are "StopLogging" and "DeleteTrail"
+- Key fields to look out for are "eventName", "actor", sourceIPAddress, and "outcome" because they point who committed the action and what they did
+- This detection would classify as an atomic rule since it only alerts on a specific event
 
 
 <img width="1332" height="570" alt="Screenshot 2026-10-21 195517" src="https://github.com/user-attachments/assets/6a2a56d2-2647-4ce8-8e4a-c9737d6f9251" />
 
 <img width="2270" height="313" alt="Screenshot 2026-10-20 205852" src="https://github.com/user-attachments/assets/aead1d9a-c9ee-447a-8568-897aab87bc7c" />
 
-- Showing triggered alerts from "CloudTrail Logging Tampering" detection rule after deleting log trail
+## Detection Rule #2: Granting Public Access to an EC2 Security Group
 
+**Objective:**
+Alerts and detects on any misconfigurations for allowing a security group inbound access from 0.0.0.0/0. This can indicate a compromise by attackers to bypass defensive mechanisms to enable lateral movement, data exfiltration, or command and control (C2)
+
+
+**SPL Detection Query:**
+`index=aws_cloudtrail
+| spath
+| search eventSource="ec2.amazonaws.com"
+    (eventName="AuthorizeSecurityGroupIngress"
+     OR eventName="ModifySecurityGroupRules")
+| where isnull(errorCode)
+| where like(_raw,"%0.0.0.0/0%")
+    OR like(_raw,"%::/0%")
+| eval actor='userIdentity.arn'
+| table _time eventName actor sourceIPAddress
+        requestParameters eventID
+| sort - _time`
+
+**Detection Logic**
+
+- The API events that would alert this rule are "AuthorizeSecurityGroupIngress" or "ModifySecurityGroupRules". Actions that trigger these events would require an inbound security group rule to be added or making changes to a security group
+- Important fields to look out for are "eventName", "actor", "sourceIPAddress", and "requestParameters". This would tell us which security group was modified, to which instance it was attached to, and who modified it
+- This would be an atomic rule since the detection only looks for an individual security group modification
 
 <img width="1340" height="319" alt="Screenshot 2026-10-20 210343" src="https://github.com/user-attachments/assets/2b11efe6-0b48-421d-91e2-5d8089b7533b" />
 
 <img width="2256" height="294" alt="Screenshot 2026-10-20 210850" src="https://github.com/user-attachments/assets/95667529-2c07-4a4d-9164-d65b73fa4b9d" />
 
-- Triggered detection for granting inbound public access to a security group
 
+## Detection Rule #3: Failed Login Attempts to AWS Console
 
+**Objective** 
+ Detect and alert over three failed login attempts from the same source IP to the AWS console in the span of five minutes. Triggers of this rule would be a good indicator of credential access and brute-force
+
+ **SPL Detection Query:**
+`index=aws_cloudtrail
+eventName="ConsoleLogin"
+errorMessage="Failed authentication"
+| spath
+| eval src_ip=coalesce(sourceIPAddress,"MISSING_IP")
+| bin _time span=5m
+| stats count AS failed_logins
+        values('userIdentity.arn') AS users
+        by _time src_ip
+| where failed_logins >= 3
+| sort - failed_logins`
+
+**Detection Logic**
+- Important events to look for in logs are at least three different attempts of "ConsoleLogin" and in correlation with "Failed authentication" in 5 minutes or less
+- Key fields to looks out for are "sourceIPAddress", "eventName", "user_name", "errorMessage". This would tell us who is trying to login and from which IP address
+- This detection would classify as a correlation-based rule because it combines multiple authentication events and checks whether they meet a defined threshold
+  
 <img width="1339" height="577" alt="Screenshot 2026-10-20 210356" src="https://github.com/user-attachments/assets/473abc4e-3f03-40fa-ae16-7dfda81295c3" />
 
-- Triggered rule caused by over three failed login attempts from the same source IP to the AWS console in the span of five minutes
-  
+
 
 
 
